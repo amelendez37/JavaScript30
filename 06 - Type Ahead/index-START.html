@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <title>Type Ahead 👀</title>
   <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
   <form class="search-form">
@@ -14,9 +16,38 @@
       <li>or a state</li>
     </ul>
   </form>
-<script>
-const endpoint = 'https://gist.githubusercontent.com/Miserlou/c5cd8364bf9b2420bb29/raw/2bf258763cdddd704f8ffd3ea9a3e81d25e2c6f6/cities.json';
+  <script>
+    const endpoint = 'https://gist.githubusercontent.com/Miserlou/c5cd8364bf9b2420bb29/raw/2bf258763cdddd704f8ffd3ea9a3e81d25e2c6f6/cities.json';
+    const search = document.querySelector('.search');
+    const list = document.querySelector('.suggestions');
 
-</script>
-  </body>
+    function displayLocations(endpoint) {
+      const searchTerm = search.value.toLowerCase();
+      const regex = new RegExp(searchTerm, 'gi');
+
+      fetch(endpoint)
+        .then(data => data.json())
+        .then(json => {
+          const locations = json.filter(place => {
+            return place.state.toLowerCase().includes(searchTerm) ||
+              place.city.toLowerCase().includes(searchTerm);
+          });
+
+          list.innerHTML = locations.map(loc => {
+            const state = loc.state.replace(regex, `<span class="hl">${searchTerm}</span>`);
+            const city = loc.city.replace(regex, `<span class="hl">${searchTerm}</span>`);
+
+            return `<li>
+                      <span>${state},</span>
+                      <span>${city}</span>
+                      <span>${loc.population}</span>
+                    </li>`
+          }).join('');
+        });
+    }
+
+    search.addEventListener('keyup', displayLocations.bind(this, endpoint));
+  </script>
+</body>
+
 </html>
